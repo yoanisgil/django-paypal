@@ -3,9 +3,14 @@
 from django.http import HttpResponse, QueryDict
 from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_exempt
+from django.conf import settings
 from paypal.standard.ipn.forms import PayPalIPNForm
 from paypal.standard.ipn.models import PayPalIPN
 
+try:
+    default_charset = settings.PAYPAL_DEFAULT_IPN_CHARSET
+except AttributeError:
+    default_charset = None   
 
 @require_POST
 @csrf_exempt
@@ -28,7 +33,7 @@ def ipn(request, item_check_callable=None):
     # Assuming the tolerate parsing of QueryDict and an ASCII-like encoding,
     # such as windows-1252, latin1 or UTF8, the following will work:
 
-    encoding = request.POST.get('charset', None)
+    encoding = request.POST.get('charset', default_charset)
 
     if encoding is None:
         flag = "Invalid form - no charset passed, can't decode"
